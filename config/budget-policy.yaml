@@ -1,0 +1,38 @@
+version: 1
+currency: BRL
+owner: Renan Almeida
+
+budget:
+  authorized_total: 0.00
+  committed_total: 0.00
+  spent_total: 0.00
+  real_spend_enabled: false
+  human_payment_only: true
+
+authorization:
+  owner_approval_required: true
+  approvals_expire_after_hours: 72
+  exact_amount_required: true
+  channel_required: true
+  start_and_end_dates_required: true
+  stop_loss_required: true
+
+agents_may:
+  - research
+  - estimate
+  - simulate
+  - draft_campaigns
+  - compare_suppliers
+  - recommend_budget
+
+agents_may_not:
+  - enter_payment_details
+  - activate_paid_campaigns
+  - purchase_services
+  - increase_budget
+  - renew_subscriptions
+  - transfer_funds
+  - connect_financial_accounts
+  - accept_paid_contracts
+
+fail_closed: true
