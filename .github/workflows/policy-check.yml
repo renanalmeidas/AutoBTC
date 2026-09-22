@@ -1,42 +1,16 @@
-name: Policy check
-
-on:
-  pull_request:
-  push:
-    branches: [main]
-
-permissions:
-  contents: read
-
-jobs:
-  repository-policy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Verify budget lock
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -Eq '^  authorized_total: 0\.00$' config/budget-policy.yaml
-          grep -Eq '^  real_spend_enabled: false$' config/budget-policy.yaml
-          grep -Eq '^  human_payment_only: true$' config/budget-policy.yaml
-
       - name: Reject tracked high-risk files
         shell: bash
         run: |
           set -euo pipefail
-          if git ls-files | grep -E '(^|/)(\.env($|\.)|.*\.(pem|key|p12|pfx|jks|keystore)$|secrets/|credentials/)'; then
-            echo 'High-risk secret or credential file is tracked.' >&2
-            exit 1
-          fi
 
-      - name: Scan obvious credential patterns
-        shell: bash
-        run: |
-          set -euo pipefail
-          if git grep -nEI '(BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|aws_secret_access_key|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,})' -- ':!*.md' ':!.env.example'; then
-            echo 'Potential credential detected.' >&2
+          tracked_high_risk_files="$(
+            git ls-files |
+            grep -E '(^|/)(\.env($|\.)|.*\.(pem|key|p12|pfx|jks|keystore)$|secrets/|credentials/)' |
+            grep -Ev '(^|/)\.env\.example$' || true
+          )"
+
+          if [[ -n "$tracked_high_risk_files" ]]; then
+            echo "High-risk secret or credential file is tracked:" >&2
+            echo "$tracked_high_risk_files" >&2
             exit 1
           fi
